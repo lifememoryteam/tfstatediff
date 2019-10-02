@@ -124,23 +124,18 @@ func tfstatediff(oldtfstate, newtfstate string) (string, error) {
 }
 
 func main() {
-	// commands args
-	args := os.Args
-	if len(args) != 2 {
-		fmt.Println("Set config yaml")
-		os.Exit(1)
-	}
-
 	// flag option
 	var (
 		oldstate string
 		newstate string
+		conf     string
 	)
 	flag.StringVar(&oldstate, "old", "", "old tfstate file")
 	flag.StringVar(&newstate, "new", "", "new tfstate file")
+	flag.StringVar(&conf, "conf", "", "config file")
 	flag.Parse()
 
-	if oldstate != "" && newstate != "" {
+	if oldstate != "" && newstate != "" && conf != "" {
 		// tfstate diff
 		outputs, err := tfstatediff(oldstate, newstate)
 		if err != nil {
@@ -149,7 +144,7 @@ func main() {
 		fmt.Println(outputs)
 
 		// github pr comment
-		notifier := ReadYaml(args[1])
+		notifier := ReadYaml(conf)
 		ciname := notifier.Ci
 		github_settings := notifier.Notifier.Github
 
