@@ -1,6 +1,4 @@
 cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
-github.com/ak1ra24/drone-github-notifier v0.0.0-20190930132359-d7779c328952 h1:GsjZ/LY/w0BduTGzNzzWuUZz1qg8PLZhVKFCSxUzmTk=
-github.com/ak1ra24/drone-github-notifier v0.0.0-20190930132359-d7779c328952/go.mod h1:ttTOe/iJ6n3ZHWXLCCggLZckKiw/mBD6jhu9dTsMCaQ=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/google/go-github/v28 v28.0.1 h1:SoHeOf40H2xIQpNzGHFeOJwDqPxvEVMyz97hDafpk0Y=
 github.com/google/go-github/v28 v28.0.1/go.mod h1:+5GboIspo7F0NG2qsvfYh7en6F3EK37uyqv+c35AR3s=

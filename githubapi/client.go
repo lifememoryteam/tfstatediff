@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ak1ra24/drone-github-notifier/ci"
+	"github.com/ak1ra24/tfstatediff/ci"
 	"github.com/google/go-github/v28/github"
 	"golang.org/x/oauth2"
 )
