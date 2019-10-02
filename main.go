@@ -141,39 +141,42 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(outputs)
+		if outputs != "{}" {
 
-		// github pr comment
-		notifier := ReadYaml(conf)
-		ciname := notifier.Ci
-		github_settings := notifier.Notifier.Github
+			fmt.Println(outputs)
 
-		var ciservice ci.CiService
-		switch ciname {
-		case "drone":
-			ciservice, err = ci.Drone()
-			if err != nil {
-				panic(err)
+			// github pr comment
+			notifier := ReadYaml(conf)
+			ciname := notifier.Ci
+			github_settings := notifier.Notifier.Github
+
+			var ciservice ci.CiService
+			switch ciname {
+			case "drone":
+				ciservice, err = ci.Drone()
+				if err != nil {
+					panic(err)
+				}
+			case "":
+				fmt.Errorf("Set CI Service")
+			default:
+				fmt.Errorf("Not Support")
 			}
-		case "":
-			fmt.Errorf("Set CI Service")
-		default:
-			fmt.Errorf("Not Support")
+			pr := ciservice.PR
+
+			client := githubapi.NewClient(github_settings.Repository.Owner, github_settings.Repository.Repo, github_settings.Token, pr)
+			if ciservice.Event == "pull_request" {
+				if err := client.PRComment(outputs); err != nil {
+					log.Fatal(err)
+				}
+			} else if ciservice.Event == "push" && ciservice.Branch == "master" {
+				if err := client.PRComment(outputs); err != nil {
+					log.Fatal(err)
+				}
+			}
+		} else {
+			fmt.Println("No OUTPUTS")
 		}
-
-		pr := ciservice.PR
-
-		client := githubapi.NewClient(github_settings.Repository.Owner, github_settings.Repository.Repo, github_settings.Token, pr)
-		if ciservice.Event == "pull_request" {
-			if err := client.PRComment(outputs); err != nil {
-				log.Fatal(err)
-			}
-		} else if ciservice.Event == "push" && ciservice.Branch == "master" {
-			if err := client.PRComment(outputs); err != nil {
-				log.Fatal(err)
-			}
-		}
-
 	} else {
 		fmt.Println("Not Set tfstate file")
 		os.Exit(1)
