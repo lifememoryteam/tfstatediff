@@ -128,7 +128,7 @@ func CommentMd(outputs map[string]string, template string) string {
 	for key, value := range outputs {
 		commentmd += "| " + key + " | " + value + " |\n"
 	}
-	commentmd += template
+	commentmd += "\n" + template
 
 	return commentmd
 }
