@@ -67,15 +67,15 @@ func ReadYaml(filename string) NotifierService {
 	return notifier
 }
 
-func tfstatediff(oldtfstate, newtfstate string) (string, error) {
+func tfstatediff(oldtfstate, newtfstate string) (map[string]string, error) {
 	newjson, err := ioutil.ReadFile(newtfstate)
 	if err != nil {
-		return "", err
+		return map[string]string{}, err
 	}
 
 	var newResources Tfstate
 	if err := json.Unmarshal(newjson, &newResources); err != nil {
-		return "", err
+		return map[string]string{}, err
 	}
 
 	newServer := map[string]string{}
@@ -90,12 +90,12 @@ func tfstatediff(oldtfstate, newtfstate string) (string, error) {
 
 	oldjson, err := ioutil.ReadFile(oldtfstate)
 	if err != nil {
-		return "", err
+		return map[string]string{}, err
 	}
 
 	var oldResources Tfstate
 	if err := json.Unmarshal(oldjson, &oldResources); err != nil {
-		return "", err
+		return map[string]string{}, err
 	}
 
 	oldServer := map[string]string{}
@@ -115,12 +115,22 @@ func tfstatediff(oldtfstate, newtfstate string) (string, error) {
 		}
 	}
 
-	output, err := json.Marshal(newServer)
-	if err != nil {
-		log.Fatal(err)
-	}
+	// output, err := json.Marshal(newServer)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
-	return string(output), nil
+	return newServer, nil
+}
+
+func CommentMd(outputs map[string]string, template string) string {
+	commentmd := "| インスタンス名 | IPアドレス |\n|:------------:|:------------:|\n"
+	for key, value := range outputs {
+		commentmd += "| " + key + " | " + value + " |\n"
+	}
+	commentmd += template
+
+	return commentmd
 }
 
 func main() {
@@ -129,10 +139,12 @@ func main() {
 		oldstate string
 		newstate string
 		conf     string
+		template string
 	)
 	flag.StringVar(&oldstate, "old", "", "old tfstate file")
 	flag.StringVar(&newstate, "new", "", "new tfstate file")
 	flag.StringVar(&conf, "conf", "", "config file")
+	flag.StringVar(&template, "template", "", "comment template")
 	flag.Parse()
 
 	if oldstate != "" && newstate != "" && conf != "" {
@@ -141,9 +153,10 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if outputs != "{}" {
+		if len(outputs) != 0 {
 
-			fmt.Println(outputs)
+			commentmd := CommentMd(outputs, template)
+			fmt.Println(commentmd)
 
 			// github pr comment
 			notifier := ReadYaml(conf)
@@ -166,11 +179,11 @@ func main() {
 
 			client := githubapi.NewClient(github_settings.Repository.Owner, github_settings.Repository.Repo, github_settings.Token, pr)
 			if ciservice.Event == "pull_request" {
-				if err := client.PRComment(outputs); err != nil {
+				if err := client.PRComment(commentmd); err != nil {
 					log.Fatal(err)
 				}
 			} else if ciservice.Event == "push" && ciservice.Branch == "master" {
-				if err := client.PRComment(outputs); err != nil {
+				if err := client.PRComment(commentmd); err != nil {
 					log.Fatal(err)
 				}
 			}
